@@ -210,3 +210,37 @@ button:focus {
     padding: 10px 12px;
   }
 }
+.search-history {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.search-history h4 {
+  margin-bottom: 10px;
+  font-size: 18px;
+  color: #555;
+}
+
+.search-history ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.search-history ul li {
+  margin: 5px 0;
+  padding: 8px 10px;
+  background-color: #e6e6e6;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.search-history ul li:hover {
+  background-color: #ccc;
+}
+
+.search-history ul li svg {
+  margin-right: 8px;
+}

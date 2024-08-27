@@ -1,26 +1,38 @@
 import { useEffect, useState } from "react";
 import Search from "../search";
 import { WiDaySunny, WiWindy, WiHumidity } from "react-icons/wi";
-import { FaSun, FaMoon, FaLanguage } from "react-icons/fa"; // Icono de idioma
+import { FaSun, FaMoon, FaLanguage, FaSearch } from "react-icons/fa";
 
 export default function Weather() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [weatherData, setWeatherData] = useState(null);
-  const [darkMode, setDarkMode] = useState(false); // Estado para el modo oscuro
-  const [language, setLanguage] = useState("en"); // Estado para el idioma
+  const [darkMode, setDarkMode] = useState(false);
+  const [language, setLanguage] = useState("en");
+  const [searchHistory, setSearchHistory] = useState([]); // Estado para el historial de búsquedas
+
+  useEffect(() => {
+    // Cargar historial de búsquedas desde el localStorage
+    const storedSearches = JSON.parse(localStorage.getItem("searchHistory")) || [];
+    setSearchHistory(storedSearches);
+  }, []);
 
   async function fetchWeatherData(param) {
     setLoading(true);
     try {
       const response = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=${param}&appid=e34b4c51d8c2b7bf48d5217fe52ff79e&lang=${language}` // Añadir el idioma a la solicitud
+        `https://api.openweathermap.org/data/2.5/weather?q=${param}&appid=e34b4c51d8c2b7bf48d5217fe52ff79e&lang=${language}`
       );
 
       const data = await response.json();
       if (data) {
         setWeatherData(data);
         setLoading(false);
+
+        // Guardar búsqueda en el historial
+        const newSearchHistory = [param, ...searchHistory.filter((item) => item !== param)].slice(0, 5); // Limitar a 5 búsquedas
+        setSearchHistory(newSearchHistory);
+        localStorage.setItem("searchHistory", JSON.stringify(newSearchHistory)); // Guardar en localStorage
       }
     } catch (e) {
       setLoading(false);
@@ -29,7 +41,9 @@ export default function Weather() {
   }
 
   async function handleSearch() {
-    fetchWeatherData(search);
+    if (search.trim() !== "") {
+      fetchWeatherData(search);
+    }
   }
 
   function getCurrentDate() {
@@ -41,10 +55,6 @@ export default function Weather() {
     });
   }
 
-  useEffect(() => {
-    fetchWeatherData("panama");
-  }, [language]);
-
   function toggleLanguage() {
     setLanguage(language === "en" ? "es" : "en");
   }
@@ -53,11 +63,11 @@ export default function Weather() {
     <div className={darkMode ? "weather-app dark-mode" : "weather-app"}>
       <div className="controls">
         <button onClick={() => setDarkMode(!darkMode)} className="dark-mode-toggle">
-          {darkMode ? <FaSun size={20} /> : <FaMoon size={20} />} {/* Icono de Sol o Luna */}
+          {darkMode ? <FaSun size={20} /> : <FaMoon size={20} />}
           {darkMode ? (language === "en" ? " Light Mode" : " Modo Claro") : (language === "en" ? " Dark Mode" : " Modo Oscuro")}
         </button>
         <button onClick={toggleLanguage} className="language-toggle">
-          <FaLanguage size={20} /> {/* Icono de idioma */}
+          <FaLanguage size={20} />
           {language === "en" ? " Español" : " English"}
         </button>
       </div>
@@ -67,6 +77,18 @@ export default function Weather() {
         setSearch={setSearch}
         handleSearch={handleSearch}
       />
+
+      {/* Historial de búsquedas */}
+      <div className="search-history">
+        <h4>{language === "en" ? "Search History" : "Historial de Búsqueda"}</h4>
+        <ul>
+          {searchHistory.map((item, index) => (
+            <li key={index} onClick={() => fetchWeatherData(item)}>
+              <FaSearch /> {item}
+            </li>
+          ))}
+        </ul>
+      </div>
 
       {loading ? (
         <div className="loading">{language === "en" ? "Loading..." : "Cargando..."}</div>
